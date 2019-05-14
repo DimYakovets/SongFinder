@@ -1,0 +1,100 @@
+﻿<Window x:Class="SongPlayer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Background="#FFAAAAAA"
+        KeyDown="Window_KeyDown"
+        Title="Song Finder 1.1.1" 
+        Height="450" Width="1000"
+        MaxWidth="1000"
+        MinWidth="890"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing"
+        WindowStartupLocation="CenterScreen"
+        Icon="icon.ico">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width = "330"/>
+            <ColumnDefinition Width = "870*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height ="40"/>
+            <RowDefinition Height ="35"/>
+            <RowDefinition Height ="105"/>
+            <RowDefinition Height ="232*"/>
+        </Grid.RowDefinitions>
+        <Button Click="SettingsClick" Name="Settings" Height="30" Width="135" Grid.Column="3" HorizontalAlignment="Right" FontSize="17" Margin="0,0,5,0" Content="Налаштування"/>
+        <TextBox TextChanged="Search_TextChanged" Name="Search" VerticalContentAlignment="Center" Grid.Row="0" Grid.Column="0" Margin="5" FontSize="16"/>
+        <TextBlock Name="Info" Grid.Row="0" Text="Інформація" TextAlignment="Center" HorizontalAlignment="Center"  Grid.Column="1" Margin="0,5,50,5" FontSize="20" Background="#FFAAAAAA"/>
+
+        <ListView Name="Content" Grid.Row="2" Grid.RowSpan="2" Grid.Column="0" Margin="5,0,5,5" Background="#AAAAAA" >
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Button MouseDoubleClick="Button_MouseDoubleClick" Click="SongClick" Margin="1" HorizontalContentAlignment="Left">
+                        <TextBlock Text="{Binding Name}" FontSize="16" Width="300" />
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Play" Click="ButtonContextClick" />
+                                <MenuItem Header="Edit"/>
+                                <MenuItem Header="Delete"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <ComboBox SelectionChanged="Category_SelectionChanged" Name="Category" HorizontalAlignment="Left" Margin="5,5,0,0" Grid.Row="1" VerticalAlignment="Top" Width="320" Height="22"/>
+
+        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="1">
+            <TextBlock Name ="SongName" Margin="5" Text="Назва : " Background="#FFAAAAAA" TextAlignment="Left" FontSize="17"/>
+            <TextBlock Name ="SongLang" Margin="5" Text="Мова : " Background="#FFAAAAAA" TextAlignment="Left" FontSize="17"/>
+            <TextBlock Name ="SongNumber" Margin="5" Text="Номер : " Background="#FFAAAAAA" TextAlignment="Left" FontSize="17"/>
+            <TextBlock Name ="SongCategory" Margin="5" Text="Категорія : " Background="#FFAAAAAA" TextAlignment="Left" FontSize="17"/>
+        </StackPanel>
+        <StackPanel Grid.Row="3" Grid.Column="3">
+            <Grid Margin="0,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width ="120*"/>
+                    <ColumnDefinition Width ="120*"/>
+                    <ColumnDefinition Width ="120*"/>
+                    <ColumnDefinition Width ="120*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height ="40"/>
+                </Grid.RowDefinitions>
+                <Button Name="SongPlay" Click="Run"  Margin="3" Grid.Column="0" Content="Відтворити" FontSize="17"/>
+                <Button Name="SongEdit" Click="Edit"  Margin="3" Grid.Column="1" Content="Редагувати" FontSize="17"/>
+                <Button Name="SongAdd" Click="AddNew"  Margin="3" Grid.Column="2" Content="Додати нову" FontSize="17"/>
+                <Button Name="SongDelete" Click="Delete"  Margin="3" Grid.Column="3" Content="Видалити" FontSize="17"/>
+            </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width ="120*"/>
+                    <ColumnDefinition Width ="120*"/>
+                    <ColumnDefinition Width ="120*"/>
+                    <ColumnDefinition Width ="120*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height ="40"/>
+                    <RowDefinition Height ="40"/>
+                    <RowDefinition Height ="40"/>
+                    <RowDefinition Height ="40"/>
+                    <RowDefinition Height ="40"/>
+                </Grid.RowDefinitions>
+                <Slider Name="timeSlider" ValueChanged="ValueChanged" Thumb.DragCompleted="TimeChange" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="4" VerticalAlignment="Center" Margin="90,0,90,0"  SmallChange="1" TickPlacement="TopLeft" >
+                    <Slider.ToolTip>
+                        <StackPanel>
+                        </StackPanel>
+                    </Slider.ToolTip>
+                </Slider>
+                <TextBlock Name="time" Grid.Column="0" Grid.Row="1" Text="00:00" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+                <TextBlock Name="timeEnd" Grid.Column="3" Grid.Row="1" Text="00:00" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0" />
+                <Button Name="PausePlay" Click="Pause"  Margin="3" Grid.Column="0" Grid.Row="2" Content="Pause" FontSize="17"/>
+                <Button Click="Stop"  Margin="3" Grid.Column="1" Grid.Row="2" Content="Stop" FontSize="17"/>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Window>

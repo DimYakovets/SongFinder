@@ -1,0 +1,91 @@
+﻿<Window x:Class="SongPlayer.EditDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SongPlayer"
+        xmlns:databinding="clr-namespace:SongPlayer"
+        mc:Ignorable="d"
+        Background="#FFAAAAAA"
+        Title="Edit Song Dialog" Height="260" Width="610"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Icon="icon.ico">
+
+
+    <Window.Resources>
+        <databinding:InvertBool x:Key="InvertBool"/>
+
+        <Style TargetType="Button" x:Key="Base">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="Width" Value="170"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}" >
+                                <Border.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform/>
+                                        <SkewTransform AngleX="-10"/>
+                                        <RotateTransform/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Border.RenderTransform>
+                            </Border>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="Para" BasedOn="{StaticResource Base}"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="200"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <TextBlock Name="File" Grid.Column="0" Text="Файл" Margin="5" FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+        <TextBlock Name="Name" Grid.Column="0" Grid.Row="1" Margin="5" Text="Назва" FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+        <TextBlock Name="Lang" Grid.Column="0" Grid.Row="2" Margin="5" Text="Мова" FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+        <TextBlock Name="Number" Grid.Column="0" Grid.Row="3" Margin="5" Text="Номер" FontSize="15.5" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+        <TextBlock Name="Rewriten" Grid.Row="3" Margin="64,0,30,0" Text="Переписаний" VerticalAlignment="Center" FontSize="15.5"/>
+        <TextBlock Name="Category" Grid.Column="0" Grid.Row="4" Margin="5" Text="Категорія" FontSize="17" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+        <TextBox Name="SongName" Grid.ColumnSpan="2" Grid.Column="0" Margin="103,3,65,3" Grid.Row="1" />
+        <ComboBox Name="SongLang" Grid.ColumnSpan="2" Grid.Column="0" Margin="103,3,65,3" Grid.Row="2" />
+        <TextBox  Name="SongNumber" IsEnabled="{Binding ElementName=IsHasNumber,Path=IsChecked,Converter={StaticResource InvertBool}}" PreviewTextInput="NumberValidationTextBox" Grid.Column="1" Margin="0,3,65,3" Grid.Row="3" />
+        <ComboBox IsEnabled="{Binding ElementName=NewCategory, Path=IsChecked,Converter={StaticResource InvertBool}}" Name="SongCategoryList" Grid.ColumnSpan="2" Grid.Column="0" Width="230" Margin="3,3,-37,3" Grid.Row="4" />
+        <TextBox Name="SongCategory" IsEnabled="{Binding ElementName=NewCategory, Path=IsChecked}"  Grid.ColumnSpan="2" Margin="141,3,65,3" Width="194" Grid.Row="5" Grid.Column="0"/>
+        <CheckBox Name="NewCategory" Grid.Row="5" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="125,8,64,8" RenderTransformOrigin="2.312,0.5" Width="17"/>
+        <Button Click="EditSong_Click" Style="{StaticResource Para}" Name="AddSong" Grid.Row="6" Margin="3" Grid.ColumnSpan="2" Width="170" Content="Зберегти"/>
+        <Button Click="Cancel_Click" Style="{StaticResource Para}" Name="Cancel" Grid.Row="6" Margin="3" Grid.Column="1" Grid.ColumnSpan="2" Content="Відміна" Width="170"/>
+        <Button Click="OBZOR_Click" Name="OBZOR" Grid.Row="0" Grid.Column="0"  Width="30" Height="20" Margin="103,5,67,5" Content="..."/>
+        <TextBlock Name="FileName" Grid.Row="0" Margin="135,7,65,7" Grid.ColumnSpan="3" Text="File name" VerticalAlignment="Center"/>
+        <TextBlock Name="NewCategoryL" Margin="5" FontSize="17" Text="Нова категорія" Grid.Row="5" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+        <CheckBox Name ="IsHasNumber" Grid.Row="3" Margin="175,8,0,0"/>
+        <!--Buffer View-->
+        <TextBlock Name="SongBName" Grid.Column="2" Grid.Row="1" Text="" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="11.8" Margin="-60,0,0,0"/>
+        <TextBlock Name="SongBLang" Grid.Column="2" Grid.Row="2" Text="" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Margin="-60,0,0,0"/>
+        <TextBlock Name="SongBNumber" Grid.Column="2" Grid.Row="3" Text="" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Margin="-60,0,0,0"/>
+        <TextBlock Name="SongBCategory" Grid.Column="2" Grid.Row="4" Text="" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13.5" Margin="-60,0,0,0"/>
+
+
+
+
+    </Grid>
+</Window>
