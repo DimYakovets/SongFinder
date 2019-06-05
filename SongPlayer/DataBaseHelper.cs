@@ -15,7 +15,7 @@ namespace SongPlayer
             using (SQLiteConnection DB = new SQLiteConnection($"Data source={Consts.DBPath}; Version=3"))
             {
                 DB.Open();
-                SQLiteCommand cmd =new SQLiteCommand("Select Name,Lang,Number,Category,Popularity from Songs", DB);
+                SQLiteCommand cmd =new SQLiteCommand("Select Name,Lang,Number,Category from Songs", DB);
                 SQLiteDataReader SQL = cmd.ExecuteReader();
                 using (SQL)
                 {
@@ -29,8 +29,7 @@ namespace SongPlayer
                                 var number = Convert.ToInt16(SQL["Number"]);
                                 string lang = (string)SQL["Lang"];
                                 string category = (string)SQL["Category"];
-                                short popularity = Convert.ToInt16(SQL["Popularity"]);
-                                songs.Add(new Song(name, number, category, lang, popularity));
+                                songs.Add(new Song(name, number, category, lang));
                                 GC.Collect();
 
                             }

@@ -4,12 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Background="#FFAAAAAA"
+        Background="#ffbbbbbb"
         KeyDown="Window_KeyDown"
         Title="Song Finder 1.1.1" 
-        Height="450" Width="1000"
+        Height="450" 
+        MinHeight="450" 
+        MaxHeight="450" 
+        Width="1000"
+        MinWidth="1000"
         MaxWidth="1000"
-        MinWidth="890"
         Loaded="Window_Loaded"
         Closing="Window_Closing"
         WindowStartupLocation="CenterScreen"
@@ -17,7 +20,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width = "330"/>
-            <ColumnDefinition Width = "870*"/>
+            <ColumnDefinition Width = "*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height ="40"/>
@@ -25,36 +28,23 @@
             <RowDefinition Height ="105"/>
             <RowDefinition Height ="232*"/>
         </Grid.RowDefinitions>
-        <Button Click="SettingsClick" Name="Settings" Height="30" Width="135" Grid.Column="3" HorizontalAlignment="Right" FontSize="17" Margin="0,0,5,0" Content="Налаштування"/>
-        <TextBox TextChanged="Search_TextChanged" Name="Search" VerticalContentAlignment="Center" Grid.Row="0" Grid.Column="0" Margin="5" FontSize="16"/>
-        <TextBlock Name="Info" Grid.Row="0" Text="Інформація" TextAlignment="Center" HorizontalAlignment="Center"  Grid.Column="1" Margin="0,5,50,5" FontSize="20" Background="#FFAAAAAA"/>
+        <TextBox TextChanged="Search_TextChanged" Name="Search" VerticalContentAlignment="Center" Grid.Row="0" Grid.Column="0" Margin="5" FontSize="16" Background="#efefef" BorderThickness="1" BorderBrush="Black"/>
+        <TextBlock Name="Info" Grid.Row="0" Text="Інформація" TextAlignment="Center" HorizontalAlignment="Center"  Grid.Column="1" Margin="0,5,50,5" FontSize="20"/>
 
-        <ListView Name="Content" Grid.Row="2" Grid.RowSpan="2" Grid.Column="0" Margin="5,0,5,5" Background="#AAAAAA" >
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Button MouseDoubleClick="Button_MouseDoubleClick" Click="SongClick" Margin="1" HorizontalContentAlignment="Left">
-                        <TextBlock Text="{Binding Name}" FontSize="16" Width="300" />
-                        <Button.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Play" Click="ButtonContextClick" />
-                                <MenuItem Header="Edit"/>
-                                <MenuItem Header="Delete"/>
-                            </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Grid.RowSpan="2" Grid.Column="0" Margin="0,5,5,5" Background="#00000000">
+            <StackPanel Name="Content"/>
+        </ScrollViewer>
+
 
         <ComboBox SelectionChanged="Category_SelectionChanged" Name="Category" HorizontalAlignment="Left" Margin="5,5,0,0" Grid.Row="1" VerticalAlignment="Top" Width="320" Height="22"/>
 
         <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="1">
-            <TextBlock Name ="SongName" Margin="5" Text="Назва : " Background="#FFAAAAAA" TextAlignment="Left" FontSize="17"/>
-            <TextBlock Name ="SongLang" Margin="5" Text="Мова : " Background="#FFAAAAAA" TextAlignment="Left" FontSize="17"/>
-            <TextBlock Name ="SongNumber" Margin="5" Text="Номер : " Background="#FFAAAAAA" TextAlignment="Left" FontSize="17"/>
-            <TextBlock Name ="SongCategory" Margin="5" Text="Категорія : " Background="#FFAAAAAA" TextAlignment="Left" FontSize="17"/>
+            <TextBlock Name ="SongName" Margin="5" Text="Назва : " TextAlignment="Left" FontSize="17"/>
+            <TextBlock Name ="SongLang" Margin="5" Text="Мова : " TextAlignment="Left" FontSize="17"/>
+            <TextBlock Name ="SongNumber" Margin="5" Text="Номер : " TextAlignment="Left" FontSize="17"/>
+            <TextBlock Name ="SongCategory" Margin="5" Text="Категорія : " TextAlignment="Left" FontSize="17"/>
         </StackPanel>
-        <StackPanel Grid.Row="3" Grid.Column="3">
+        <StackPanel Grid.Row="3" Grid.Column="1">
             <Grid Margin="0,0,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width ="120*"/>
@@ -84,16 +74,15 @@
                     <RowDefinition Height ="40"/>
                     <RowDefinition Height ="40"/>
                 </Grid.RowDefinitions>
-                <Slider Name="timeSlider" ValueChanged="ValueChanged" Thumb.DragCompleted="TimeChange" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="4" VerticalAlignment="Center" Margin="90,0,90,0"  SmallChange="1" TickPlacement="TopLeft" >
-                    <Slider.ToolTip>
-                        <StackPanel>
-                        </StackPanel>
-                    </Slider.ToolTip>
-                </Slider>
-                <TextBlock Name="time" Grid.Column="0" Grid.Row="1" Text="00:00" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-                <TextBlock Name="timeEnd" Grid.Column="3" Grid.Row="1" Text="00:00" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0" />
-                <Button Name="PausePlay" Click="Pause"  Margin="3" Grid.Column="0" Grid.Row="2" Content="Pause" FontSize="17"/>
-                <Button Click="Stop"  Margin="3" Grid.Column="1" Grid.Row="2" Content="Stop" FontSize="17"/>
+                <Slider Name="TimeSlider" ValueChanged="ValueChanged"  Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="4" VerticalAlignment="Center" Margin="90,0,90,0" IsMoveToPointEnabled="True" SmallChange="1"/>
+                <TextBlock Name="TimeNow" Grid.Column="0" Grid.Row="1" Text="00:00" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="25,0,0,0"/>
+                <TextBlock Name="TimeTotal" Grid.Column="3" Grid.Row="1" Text="00:00" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,25,0" />
+                
+                <Button Name="PausePlay" Click="Pause"  Margin="3" Grid.Column="0" Grid.Row="2" Content="Пауза" FontSize="17"/>
+                <Button Click="Stop"  Margin="3" Grid.Column="1" Grid.Row="2" Content="Стоп" FontSize="17"/>
+                
+                <TextBlock Name="VolumeText" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" FontSize="19" HorizontalAlignment="Left" Margin="5,0,0,0">Гучність : 100</TextBlock>
+                <Slider Grid.Row="2" Grid.Column="3" Margin="-30,0,10,0" Maximum="100" Value="100" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="VolumeChanged"/>
             </Grid>
         </StackPanel>
     </Grid>

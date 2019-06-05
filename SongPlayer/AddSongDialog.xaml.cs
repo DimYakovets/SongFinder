@@ -31,7 +31,6 @@ namespace SongPlayer
                     Categories.Add(item.Category);
             }
             SongCategoryList.ItemsSource = Categories;
-            UpdateNames();
         }
         private void AddSong_Click(object sender, RoutedEventArgs args)
         {
@@ -72,7 +71,7 @@ namespace SongPlayer
                         c.ConcatMedia(new[] { path }, lpath, "mp3", new NReco.VideoConverter.ConcatSettings());
                         MP3 = System.IO.File.ReadAllBytes(lpath);
                         System.IO.File.Delete(lpath);
-                        MessageBox.Show(Settings.GetWord(Words.NameIsBusy));
+                        MessageBox.Show("Назва використана");
                     }
                     catch(Exception e)
                     {
@@ -91,23 +90,23 @@ namespace SongPlayer
             {
                 if(name == "")
                 {
-                    error_text += Settings.GetWord(Words.NameNotSpecified) + "\n";
+                    error_text += "Назву не вказано" + "\n";
                 }
                 if (DataBaseHelper.NameExist(name) && name != "")
                 {
-                    error_text += Settings.GetWord(Words.NameIsBusy) + "\n";
+                    error_text += "Назва використана" + "\n";
                 }
                 if (category == null || category == "")
                 {
-                    error_text += Settings.GetWord(Words.CategoryNotSpecified) + "\n";
+                    error_text += "Категорію не вказано" + "\n";
                 }
                 if ((number == 0 || number < 0) && !IsHasNumber.IsChecked.Value)
                 {
-                    error_text += Settings.GetWord(Words.NumberNotSpecified) + "\n";
+                    error_text += "Номер не вказано" + "\n";
                 }
                 if (path == null || path == "")
                 {
-                    error_text += Settings.GetWord(Words.MP3FileNotSpecified) + "\n";
+                    error_text += "Файл не вказано" + "\n";
                 }
                 MessageBox.Show(error_text, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -137,18 +136,6 @@ namespace SongPlayer
         {
             Regex regex = new Regex("[^0-9]+");
             e.Handled = regex.IsMatch(e.Text);
-        }
-        void UpdateNames()
-        {
-            File.Text = Settings.GetWord(Words.File);
-            NameL.Text = Settings.GetWord(Words.Name);
-            Language.Text = Settings.GetWord(Words.Language);
-            Number.Text = Settings.GetWord(Words.Number);
-            Rewriten.Text = Settings.GetWord(Words.Rewritten);
-            Category.Text = Settings.GetWord(Words.Category);
-            NewCategoryL.Text = Settings.GetWord(Words.NewCategory);
-            AddSong.Content = Settings.GetWord(Words.Add);
-            Cancel.Content = Settings.GetWord(Words.Cancel);
         }
     }
 }

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SongPlayer"
         xmlns:databinding="clr-namespace:SongPlayer"
         mc:Ignorable="d"
-        Background="#FFAAAAAA"
+        Background="#ffbbbbbb"
         Title="Edit Song Dialog" Height="260" Width="610"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
@@ -15,34 +15,6 @@
 
     <Window.Resources>
         <databinding:InvertBool x:Key="InvertBool"/>
-
-        <Style TargetType="Button" x:Key="Base">
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="FontSize" Value="17"/>
-            <Setter Property="Width" Value="170"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Grid>
-                            <Border Background="{TemplateBinding Background}" >
-                                <Border.RenderTransform>
-                                    <TransformGroup>
-                                        <ScaleTransform/>
-                                        <SkewTransform AngleX="-10"/>
-                                        <RotateTransform/>
-                                        <TranslateTransform/>
-                                    </TransformGroup>
-                                </Border.RenderTransform>
-                            </Border>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style TargetType="Button" x:Key="Para" BasedOn="{StaticResource Base}"/>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -72,8 +44,8 @@
         <ComboBox IsEnabled="{Binding ElementName=NewCategory, Path=IsChecked,Converter={StaticResource InvertBool}}" Name="SongCategoryList" Grid.ColumnSpan="2" Grid.Column="0" Width="230" Margin="3,3,-37,3" Grid.Row="4" />
         <TextBox Name="SongCategory" IsEnabled="{Binding ElementName=NewCategory, Path=IsChecked}"  Grid.ColumnSpan="2" Margin="141,3,65,3" Width="194" Grid.Row="5" Grid.Column="0"/>
         <CheckBox Name="NewCategory" Grid.Row="5" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="125,8,64,8" RenderTransformOrigin="2.312,0.5" Width="17"/>
-        <Button Click="EditSong_Click" Style="{StaticResource Para}" Name="AddSong" Grid.Row="6" Margin="3" Grid.ColumnSpan="2" Width="170" Content="Зберегти"/>
-        <Button Click="Cancel_Click" Style="{StaticResource Para}" Name="Cancel" Grid.Row="6" Margin="3" Grid.Column="1" Grid.ColumnSpan="2" Content="Відміна" Width="170"/>
+        <Button Click="EditSong_Click" Name="AddSong" Grid.Row="6" Margin="3" Grid.ColumnSpan="2" Width="170" Content="Зберегти"/>
+        <Button Click="Cancel_Click" Name="Cancel" Grid.Row="6" Margin="3" Grid.Column="1" Grid.ColumnSpan="2" Content="Відміна" Width="170"/>
         <Button Click="OBZOR_Click" Name="OBZOR" Grid.Row="0" Grid.Column="0"  Width="30" Height="20" Margin="103,5,67,5" Content="..."/>
         <TextBlock Name="FileName" Grid.Row="0" Margin="135,7,65,7" Grid.ColumnSpan="3" Text="File name" VerticalAlignment="Center"/>
         <TextBlock Name="NewCategoryL" Margin="5" FontSize="17" Text="Нова категорія" Grid.Row="5" VerticalAlignment="Center" HorizontalAlignment="Left"/>
@@ -83,9 +55,5 @@
         <TextBlock Name="SongBLang" Grid.Column="2" Grid.Row="2" Text="" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Margin="-60,0,0,0"/>
         <TextBlock Name="SongBNumber" Grid.Column="2" Grid.Row="3" Text="" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Margin="-60,0,0,0"/>
         <TextBlock Name="SongBCategory" Grid.Column="2" Grid.Row="4" Text="" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="13.5" Margin="-60,0,0,0"/>
-
-
-
-
     </Grid>
 </Window>

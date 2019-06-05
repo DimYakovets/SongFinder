@@ -18,12 +18,12 @@ namespace SongPlayer
     public partial class MainWindow : Window
     {
         public static List<Song> Songs { get; private set; }
-        List<string> files = new List<string>();
-        short fileIndex;
-        string PlayerPath = "wmplayer.exe";
-        bool pChange = false;
-        Song selcted = null;
+        public DispatcherTimer Timer { get => timer; set => timer = value; }
 
+        readonly List<string> files = new List<string>();
+        short fileIndex;
+        bool pChange = false;
+        Song selected = null;
 
         public MainWindow()
         {
@@ -40,34 +40,26 @@ namespace SongPlayer
         }
         private void Run(object sender, RoutedEventArgs args)
         {
-            string name = selcted != null ? selcted.Name : "";
-
-            byte[] arr = null;
+            string name = selected != null ? selected.Name : "";
             if (name != "")
             {
-                var priority = Songs.Find(e => e.Name == name).Popularity;
-                Songs.Find(e => e.Name == name).PopularityUp();
-                DataBaseHelper.Edit(name, "Popularity", priority + 1);
-                arr = DataBaseHelper.GetMp3(name);
-                fileIndex++;
-                if (arr != null)
+                try
                 {
-                    try
+                    byte[] arr = null;
+                    arr = DataBaseHelper.GetMp3(name);
+                    if (arr != null)
                     {
+                        fileIndex++;
                         var file = Environment.CurrentDirectory + "\\Data\\Temp\\.file" + fileIndex.ToString() + ".mp3";
                         files.Add(file);
                         System.IO.File.WriteAllBytes(file, arr);
-
-                        //var process = new ProcessStartInfo(PlayerPath, "\"" + file + "\"");
-                        //Process.Start(process);
                         state = State.NaN;
-                        Play(Environment.CurrentDirectory + @"\1.mp3");
-
+                        Play(file);
                     }
-                    catch (Exception e)
-                    {
-                        Log.Error(e.StackTrace + " => " + e.Message);
-                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e.StackTrace + " => " + e.Message);
                 }
             }
             GC.Collect();
@@ -75,7 +67,7 @@ namespace SongPlayer
         #region Edit/Add/Delete
         private void Edit(object sender, RoutedEventArgs e)
         {
-            var name = SongName.Text.Replace($"{SongPlayer.Settings.GetWord(Words.Name)} : ", "");
+            var name = selected.Name;
             if (name != "" && name != null)
             {
                 EditDialog edit = new EditDialog(name);
@@ -91,12 +83,10 @@ namespace SongPlayer
         }
         private void Delete(object sender, RoutedEventArgs e)
         {
-            var name = SongName.Text.Replace($"{SongPlayer.Settings.GetWord(Words.Name)} : ", "");
+            var name = selected.Name;
             if (name != "" && name != null)
             {
-                DeleteDialog delete = new DeleteDialog(name);
-                delete.ShowDialog();
-                if (delete.GetDelete())
+                if (MessageBox.Show($"Видалити {name} ?", "Видалити", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     DataBaseHelper.Delete(name);
                     ResetInfo();
@@ -120,25 +110,18 @@ namespace SongPlayer
         }
         #endregion
         #region Song actions
-        private void SettingsClick(object sender, RoutedEventArgs e)
-        {
-           new SettingsDialog().ShowDialog();
-           SongPlayer.Settings.Update();
-           UpdateNames();
-           PlayerPath = SongPlayer.Settings.Path;
-        }
         private void SongClick(object sender,RoutedEventArgs e)
         {
-            Song item = (Song)(sender as Button).DataContext;
+            var item = Songs.Find((p) => p.Name == ((sender as Button).Content as Label).Content as string);
             if (item != null)
             {
                 var num = item.Number.ToString();
-                num = num == "0" ? $"{SongPlayer.Settings.GetWord(Words.Rewritten)}" : num;
-                SongName.Text = $"{SongPlayer.Settings.GetWord(Words.Name)} : " + item.Name;
-                SongLang.Text = $"{SongPlayer.Settings.GetWord(Words.Language)} : " + item.Lang;
-                SongNumber.Text = $"{SongPlayer.Settings.GetWord(Words.Number)} : " + num;
-                SongCategory.Text = $"{SongPlayer.Settings.GetWord(Words.Category)} : " + item.Category;
-                selcted = item;
+                num = num == "0" ? $"Переписаний" : num;
+                SongName.Text = $"Назва : " + item.Name;
+                SongLang.Text = $"Мова : " + item.Lang;
+                SongNumber.Text = $"Номер : " + num;
+                SongCategory.Text = $"Категорія : " + item.Category;
+                selected = item;
             }
             GC.Collect();
         }
@@ -154,18 +137,18 @@ namespace SongPlayer
                     if (Convert.ToInt32((Search.Text)) < 2500)
                     {
                         var newContent = Songs.FindAll((f) => f.Number == Convert.ToInt32((Search.Text)));
-                        Content.ItemsSource = newContent;
+                        UpdateSomgsLis(newContent.ToArray());
                     }
                 }
                 else
                 {
                     var newContent = Songs.FindAll((f) => f.Name.ToUpper().Contains((sender as TextBox).Text.ToUpper()));
-                    Content.ItemsSource = newContent;
+                    UpdateSomgsLis(newContent.ToArray());
                 }
             }
             else
             {
-                Content.ItemsSource = Songs;
+                UpdateSomgsLis(Songs.ToArray());
             }
             GC.Collect();
         }
@@ -175,18 +158,13 @@ namespace SongPlayer
             {
                 Search.Text = "";
                 var newContent = Songs.FindAll((f) => f.Category.ToUpper().Contains(((sender as ComboBox).SelectedValue as string).Replace("Все", "").ToUpper()));
-                Content.ItemsSource = newContent;
-                GC.Collect();
-            }
-            else if((sender as ComboBox).SelectedItem != null && (string)(sender as ComboBox).SelectedItem == "Популярні") 
-            {
-                Content.ItemsSource = Songs.OrderByDescending(f => f.Popularity);
+                UpdateSomgsLis(newContent.ToArray());
                 GC.Collect();
             }
             else
             {
                 var newContent = Songs.FindAll((f) => f.Category.ToUpper().Contains(((sender as ComboBox).SelectedValue as string).Replace("Все", "").ToUpper()));
-                Content.ItemsSource = newContent;
+                UpdateSomgsLis(newContent.ToArray());
                 GC.Collect();
             }
         }
@@ -200,67 +178,88 @@ namespace SongPlayer
             NaN
         }
 
-        MediaPlayer player = new MediaPlayer();
-        MediaTimeline timeLine = new MediaTimeline();
+        readonly MediaPlayer player = new MediaPlayer();
+        DispatcherTimer timer = new DispatcherTimer();
         State state = State.NaN;
-
+        bool PChange = false;
         private void Play(string file)
         {
             if (state == State.NaN || state == State.Stop)
             {
+                TagLib.File f = TagLib.File.Create(file, TagLib.ReadStyle.Average);
+                var time = Math.Floor(f.Properties.Duration.TotalSeconds);
+                TimeTotal.Text = f.Properties.Duration.ToString(@"mm\:ss");
+                TimeSlider.Maximum = time;
+                TimeSlider.Value = 0;
                 player.Open(new Uri(file));
+                player.MediaEnded += (o, e) => 
+                {
+                    Stop(null, null);
+                };
+                Timer.Interval = TimeSpan.FromSeconds(1);
+                Timer.Tick += (o,e) => 
+                {
+                    TimeNow.Text = player.Position.ToString(@"mm\:ss");
+                    var now = Math.Floor(player.Position.TotalSeconds);
+                    PChange = true;
+                    TimeSlider.Value = now;
+                    PChange = false;
+                };
+
+                Timer.Start();
                 player.Play();
+
                 state = State.Play;
-                PausePlay.Content = "Pause";
+                PausePlay.Content = "Пауза";
+                TimeNow.Text = "00:00";
             }
         }
-
-
         private void Stop (object sender, RoutedEventArgs e)
         {
             if (state == State.Play || state == State.Pause)
             {
                 player.Stop();
                 state = State.Stop;
-                PausePlay.Content = "Pause";
+                PausePlay.Content = "Паузa";
+                TimeNow.Text = "00:00";
+                TimeTotal.Text = "00:00";
+                TimeSlider.Value = 0;
+                TimeSlider.Maximum = 0;
+                Timer.Stop();
+                player.Close();
             }
         }
-
         private void Pause (object sender, RoutedEventArgs e)
         {
             if (state == State.Play)
             {
                 player.Pause();
                 state = State.Pause;
-                PausePlay.Content = "Resume";
+                PausePlay.Content = "Продовжити";
                 return;
             }
             if (state == State.Pause)
             {
                 player.Play();
                 state = State.Play;
-                PausePlay.Content = "Pause";
+                PausePlay.Content = "Пауза";
             }
         }
         private void ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (!PChange)
+            {
+                player.Position = new TimeSpan(0,0,(int)e.NewValue);
+                TimeNow.Text = player.Position.ToString(@"mm\:ss");
+            }
         }
-        private void TimeChange(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        private void VolumeChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-
-        }
-        private void TimeChangeBegin(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
-        {
-
+            player.Volume = e.NewValue / 100;
+            VolumeText.Text = $"Гучність : {(int)e.NewValue}";
         }
         #endregion
         #region Window events
-        private void ButtonContextClick(object sender, RoutedEventArgs e)
-        {
-            var s = ((sender as MenuItem).Parent as ContextMenu).Parent;
-            //SongClick(sender, e);
-            //Run(sender, e);
-        }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             #region Check direcrories
@@ -269,12 +268,6 @@ namespace SongPlayer
             {
                 DataTemp.Create();
                 Log.Message("Folder Data\\Temp crated.");
-            }
-            System.IO.DirectoryInfo DataSettings = new System.IO.DirectoryInfo(Environment.CurrentDirectory + "\\Data\\Settings");
-            if (!DataSettings.Exists)
-            {
-                DataSettings.Create();
-                Log.Message("Folder Data\\Settings crated.");
             }
             System.IO.DirectoryInfo DataDataBase = new System.IO.DirectoryInfo(Environment.CurrentDirectory + "\\Data\\DataBase");
             if (!DataDataBase.Exists || !System.IO.File.Exists(Consts.DBPath))
@@ -288,16 +281,8 @@ namespace SongPlayer
                 Log.Message("File Data\\Temp\\Songs.db crated.");
                 db.Close();
             }
-            if(!System.IO.File.Exists(Consts.SettingsPath))
-                System.IO.File.WriteAllText(Consts.SettingsPath,"{\"PlayerPath\":\"wmplayer.exe\",\"Lang\":\"ua\",\"Tips\":false,\"SQLiteConsole\":false}");
             UpdateSongs();
             #endregion
-            if (System.IO.File.Exists(Consts.SettingsPath))
-            {
-                SongPlayer.Settings.Update();
-                PlayerPath = SongPlayer.Settings.Path;
-            }
-            UpdateNames();
             
             Log.Message("Window Loaded.");
             GC.Collect();
@@ -306,12 +291,6 @@ namespace SongPlayer
         {
             System.IO.DirectoryInfo info = new System.IO.DirectoryInfo(Environment.CurrentDirectory + "\\Data\\Temp");
             var files = info.GetFiles();
-            var pName = Cut(PlayerPath).Replace(".exe", "");
-            foreach (var item in Process.GetProcessesByName(pName))
-            {
-                item.Kill();
-                Log.Message($"Process {item.ProcessName} killed.");
-            }
 
             foreach (var item in files)
             {
@@ -331,13 +310,13 @@ namespace SongPlayer
             System.IO.File.Delete("ffmpeg.exe");
             Log.Message("Window closed.");
         }
-        private void Button_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Button_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Run(sender, new RoutedEventArgs());
         }
-        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if ((Keyboard.Modifiers == ModifierKeys.Control) && (e.Key == Key.Q) && SongPlayer.Settings.Console)
+            if ((Keyboard.Modifiers == ModifierKeys.Control) && (e.Key == Key.Q))
             {
                 if (System.IO.File.Exists(@"Data\DataBase\sqlite3.exe"))
                 {
@@ -351,8 +330,8 @@ namespace SongPlayer
         {
             Songs = DataBaseHelper.Get();
             Songs.Sort((x, y) => String.CompareOrdinal(x.Name, y.Name));
-            Content.ItemsSource = Songs;
-            var Categories = new List<string>{"Все","Популярні"};
+            UpdateSomgsLis(Songs.ToArray());
+            var Categories = new List<string>{"Все"};
             foreach (var item in Songs)
             {
                 if (!Categories.Exists((c) => c == item.Category))
@@ -363,19 +342,6 @@ namespace SongPlayer
             Category.SelectedItem = "Все";
             GC.Collect();
         }
-        private void UpdateNames()
-        {
-            SongName.Text = $"{SongPlayer.Settings.GetWord(Words.Name)} : ";
-            SongLang.Text = $"{SongPlayer.Settings.GetWord(Words.Language)} : ";
-            SongNumber.Text = $"{SongPlayer.Settings.GetWord(Words.Number)} : ";
-            SongCategory.Text = $"{SongPlayer.Settings.GetWord(Words.Category)} : ";
-            SongPlay.Content = SongPlayer.Settings.GetWord(Words.Play);
-            SongEdit.Content = SongPlayer.Settings.GetWord(Words.Edit);
-            SongAdd.Content = SongPlayer.Settings.GetWord(Words.Add);
-            SongDelete.Content = SongPlayer.Settings.GetWord(Words.Delete);
-            Settings.Content = SongPlayer.Settings.GetWord(Words.Settings);
-            Info.Text = SongPlayer.Settings.GetWord(Words.Info);
-        }
         private void ResetInfo()
         {
             SongName.Text = "Назва :";
@@ -383,20 +349,25 @@ namespace SongPlayer
             SongNumber.Text = "Номер :";
             SongCategory.Text = "Категорія :";
         }
-        private string Cut(string str)
+        private void UpdateSomgsLis(Song[] songs)
         {
-            int j = str.Length - 1;
-            int index = str.Length - 1;
-            for (int i = 0; i < str.Length; i++,j--)
+            Content.Children.Clear();
+            foreach (var item in songs)
             {
-                if (str[j] == '\\')
+                var button = new Button
                 {
-                    index = i;
-                    break;
-                }
+                    Content = new Label()
+                    {
+                        Content = item.Name
+                    },
+                    Width = 290,
+                    Margin = new Thickness(0,2,0,3),
+                    Background = new SolidColorBrush(Color.FromArgb(255, 239, 239, 239))
+                };
+                button.Click += SongClick;
+                button.MouseDoubleClick += Button_MouseDoubleClick;
+                Content.Children.Add(button);
             }
-            var result = str.Remove(0, str.Length - index - 1).Replace("\\","");
-            return result;
         }
         #endregion
     }

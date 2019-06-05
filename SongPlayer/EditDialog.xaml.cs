@@ -47,7 +47,6 @@ namespace SongPlayer
             B_lang = MainWindow.Songs.Find((e) => e.Name == songname).Lang;
             B_category = MainWindow.Songs.Find((e) => e.Name == songname).Category;
             B_number = MainWindow.Songs.Find((e) => e.Name == songname).Number;
-            UpdateNames();
         }
         private void EditSong_Click(object sender, RoutedEventArgs args)
         {
@@ -57,7 +56,7 @@ namespace SongPlayer
             }
             if(MainWindow.Songs.Exists((f) => f.Name == SongName.Text))
             {
-                MessageBox.Show(Settings.GetWord(Words.NameIsBusy), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Назва використана", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             if ((SongNumber.Text != "" && SongNumber.Text != null) || IsHasNumber.IsChecked.Value)
@@ -93,7 +92,7 @@ namespace SongPlayer
                         c.ConcatMedia(new[] { path }, lpath, "mp3", new NReco.VideoConverter.ConcatSettings());
                         MP3 = System.IO.File.ReadAllBytes(lpath);
                         System.IO.File.Delete(lpath);
-                        MessageBox.Show(Settings.GetWord(Words.ConvertingEnded));
+                        MessageBox.Show("Конвертацію закінчено");
                     }
                     catch (Exception e)
                     {
@@ -157,18 +156,6 @@ namespace SongPlayer
         {
             Regex regex = new Regex("[^0-9]+");
             e.Handled = regex.IsMatch(e.Text);
-        }
-        void UpdateNames()
-        {
-            File.Text = Settings.GetWord(Words.File);
-            Name.Text = Settings.GetWord(Words.Name);
-            Lang.Text = Settings.GetWord(Words.Language);
-            Number.Text = Settings.GetWord(Words.Number);
-            Rewriten.Text = Settings.GetWord(Words.Rewritten);
-            Category.Text = Settings.GetWord(Words.Category);
-            NewCategoryL.Text = Settings.GetWord(Words.NewCategory);
-            AddSong.Content = Settings.GetWord(Words.Save);
-            Cancel.Content = Settings.GetWord(Words.Cancel);
         }
     }
 }
