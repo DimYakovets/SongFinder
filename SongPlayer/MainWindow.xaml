@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         Background="#ffbbbbbb"
         KeyDown="Window_KeyDown"
-        Title="Song Finder 1.1.1" 
+        Title="Song Finder 1.2.0" 
         Height="450" 
         MinHeight="450" 
         MaxHeight="450" 

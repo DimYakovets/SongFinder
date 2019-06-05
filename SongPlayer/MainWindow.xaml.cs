@@ -281,6 +281,11 @@ namespace SongPlayer
                 Log.Message("File Data\\Temp\\Songs.db crated.");
                 db.Close();
             }
+            System.IO.DirectoryInfo log = new System.IO.DirectoryInfo(Environment.CurrentDirectory + "\\Data\\DataBase");
+            if (!log.Exists)
+            {
+                log.Create();
+            }
             UpdateSongs();
             #endregion
             
