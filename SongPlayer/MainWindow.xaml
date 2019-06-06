@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         Background="#ffbbbbbb"
         KeyDown="Window_KeyDown"
-        Title="Song Finder 1.2.0" 
+        Title="Song Finder 1.2.1" 
         Height="450" 
         MinHeight="450" 
         MaxHeight="450" 
@@ -82,7 +82,7 @@
                 <Button Click="Stop"  Margin="3" Grid.Column="1" Grid.Row="2" Content="Стоп" FontSize="17"/>
                 
                 <TextBlock Name="VolumeText" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" FontSize="19" HorizontalAlignment="Left" Margin="5,0,0,0">Гучність : 100</TextBlock>
-                <Slider Grid.Row="2" Grid.Column="3" Margin="-30,0,10,0" Maximum="100" Value="100" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="VolumeChanged"/>
+                <Slider Grid.Row="2" Grid.Column="3" Margin="-30,0,10,0" Maximum="1" Value="1" VerticalAlignment="Center" IsMoveToPointEnabled="True" ValueChanged="VolumeChanged"/>
             </Grid>
         </StackPanel>
     </Grid>

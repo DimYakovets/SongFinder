@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.VisualBasic;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -87,17 +88,34 @@ namespace SongPlayer
                 {
                     try
                     {
-                        var c = new NReco.VideoConverter.FFMpegConverter();
                         string lpath = Environment.CurrentDirectory + "\\file.mp3";
-                        c.ConcatMedia(new[] { path }, lpath, "mp3", new NReco.VideoConverter.ConcatSettings());
+
+                        Interaction.Shell($"ffmpeg.exe -i \"{path}\" \"{lpath}\"", AppWinStyle.Hide, true, -1);
                         MP3 = System.IO.File.ReadAllBytes(lpath);
                         System.IO.File.Delete(lpath);
-                        MessageBox.Show("Конвертацію закінчено");
+                        MessageBox.Show("Конвертація завершена");
                     }
                     catch (Exception e)
                     {
                         Log.Error(e.StackTrace + " => " + e.Message);
-
+                    }
+                }
+                else if (path.EndsWith(".m4a"))
+                {
+                    try
+                    {
+                        string temp = Environment.CurrentDirectory + @"\Data\Temp\file.wav";
+                        string mp3 = Environment.CurrentDirectory + @"\Data\Temp\file.mp3";
+                        Interaction.Shell($"faad.exe -o \"{temp}\" \"{path}\"", AppWinStyle.Hide, true, -1);
+                        Interaction.Shell($"lame.exe --preset standard \"{temp}\" \"{mp3}\"", AppWinStyle.Hide, true, -1);
+                        MP3 = System.IO.File.ReadAllBytes(mp3);
+                        System.IO.File.Delete(temp);
+                        System.IO.File.Delete(mp3);
+                        MessageBox.Show("Конвертація завершена");
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e.StackTrace + " => " + e.Message);
                     }
                 }
             }
@@ -138,7 +156,7 @@ namespace SongPlayer
         {
             OpenFileDialog fileDialog = new OpenFileDialog
             {
-                Filter = "Music files(*.mp3;*.mp4)|*.mp3;*.mp4"
+                Filter = "Music files(*.mp3;*.m4a;*.mp4)|*.mp3;*.m4a;*.mp4"
             };
             fileDialog.ShowDialog();
             if (fileDialog.FileName != "")

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
@@ -7,8 +6,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Threading;
-
+using Id3;
+using NAudio.Wave;
 
 namespace SongPlayer
 {
@@ -137,18 +136,18 @@ namespace SongPlayer
                     if (Convert.ToInt32((Search.Text)) < 2500)
                     {
                         var newContent = Songs.FindAll((f) => f.Number == Convert.ToInt32((Search.Text)));
-                        UpdateSomgsLis(newContent.ToArray());
+                        UpdateSomgsList(newContent.ToArray());
                     }
                 }
                 else
                 {
                     var newContent = Songs.FindAll((f) => f.Name.ToUpper().Contains((sender as TextBox).Text.ToUpper()));
-                    UpdateSomgsLis(newContent.ToArray());
+                    UpdateSomgsList(newContent.ToArray());
                 }
             }
             else
             {
-                UpdateSomgsLis(Songs.ToArray());
+                UpdateSomgsList(Songs.ToArray());
             }
             GC.Collect();
         }
@@ -157,14 +156,15 @@ namespace SongPlayer
             if ((sender as ComboBox).SelectedItem != null && pChange && (string)(sender as ComboBox).SelectedItem != "Популярні")
             {
                 Search.Text = "";
+
                 var newContent = Songs.FindAll((f) => f.Category.ToUpper().Contains(((sender as ComboBox).SelectedValue as string).Replace("Все", "").ToUpper()));
-                UpdateSomgsLis(newContent.ToArray());
+                UpdateSomgsList(newContent.ToArray());
                 GC.Collect();
             }
             else
             {
                 var newContent = Songs.FindAll((f) => f.Category.ToUpper().Contains(((sender as ComboBox).SelectedValue as string).Replace("Все", "").ToUpper()));
-                UpdateSomgsLis(newContent.ToArray());
+                UpdateSomgsList(newContent.ToArray());
                 GC.Collect();
             }
         }
@@ -186,21 +186,31 @@ namespace SongPlayer
         {
             if (state == State.NaN || state == State.Stop)
             {
-                TagLib.File f = TagLib.File.Create(file, TagLib.ReadStyle.Average);
-                var time = Math.Floor(f.Properties.Duration.TotalSeconds);
-                TimeTotal.Text = f.Properties.Duration.ToString(@"mm\:ss");
-                TimeSlider.Maximum = time;
+                try
+                {
+                    var t = new AudioFileReader(file).TotalTime;
+                    var time = Math.Floor(t.TotalSeconds);
+                    TimeTotal.Text = t.ToString(@"mm\:ss");
+                    TimeSlider.Maximum = time;
+                }
+                catch (Exception e)
+                {
+                    var mp3File = new Mp3(file);
+                    var t = mp3File.Audio.Duration;
+                    var time = Math.Floor(t.TotalSeconds);
+                    TimeTotal.Text = t.ToString(@"mm\:ss");
+                    TimeSlider.Maximum = time;
+                }
                 TimeSlider.Value = 0;
                 player.Open(new Uri(file));
-                player.MediaEnded += (o, e) => 
-                {
-                    Stop(null, null);
-                };
-                Timer.Interval = TimeSpan.FromSeconds(1);
+                player.SpeedRatio = 1;
+
+                player.MediaEnded += (o, e) => Stop(null, null);
+                Timer.Interval = TimeSpan.FromSeconds(.5);
                 Timer.Tick += (o,e) => 
                 {
                     TimeNow.Text = player.Position.ToString(@"mm\:ss");
-                    var now = Math.Floor(player.Position.TotalSeconds);
+                    var now = player.Position.TotalSeconds;
                     PChange = true;
                     TimeSlider.Value = now;
                     PChange = false;
@@ -235,12 +245,14 @@ namespace SongPlayer
             {
                 player.Pause();
                 state = State.Pause;
+                timer.Stop();
                 PausePlay.Content = "Продовжити";
                 return;
             }
             if (state == State.Pause)
             {
                 player.Play();
+                timer.Start();
                 state = State.Play;
                 PausePlay.Content = "Пауза";
             }
@@ -249,14 +261,14 @@ namespace SongPlayer
         {
             if (!PChange)
             {
-                player.Position = new TimeSpan(0,0,(int)e.NewValue);
+                player.Position = TimeSpan.FromSeconds(e.NewValue);
                 TimeNow.Text = player.Position.ToString(@"mm\:ss");
             }
         }
         private void VolumeChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            player.Volume = e.NewValue / 100;
-            VolumeText.Text = $"Гучність : {(int)e.NewValue}";
+            player.Volume = e.NewValue;
+            VolumeText.Text = $"Гучність : {(int)(e.NewValue * 100)}";
         }
         #endregion
         #region Window events
@@ -312,7 +324,6 @@ namespace SongPlayer
                     Log.Error(e.StackTrace + " => " + e.Message);
                 }
             }
-            System.IO.File.Delete("ffmpeg.exe");
             Log.Message("Window closed.");
         }
         private void Button_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -335,7 +346,7 @@ namespace SongPlayer
         {
             Songs = DataBaseHelper.Get();
             Songs.Sort((x, y) => String.CompareOrdinal(x.Name, y.Name));
-            UpdateSomgsLis(Songs.ToArray());
+            UpdateSomgsList(Songs.ToArray());
             var Categories = new List<string>{"Все"};
             foreach (var item in Songs)
             {
@@ -354,7 +365,7 @@ namespace SongPlayer
             SongNumber.Text = "Номер :";
             SongCategory.Text = "Категорія :";
         }
-        private void UpdateSomgsLis(Song[] songs)
+        private void UpdateSomgsList(Song[] songs)
         {
             Content.Children.Clear();
             foreach (var item in songs)
@@ -365,6 +376,7 @@ namespace SongPlayer
                     {
                         Content = item.Name
                     },
+                    HorizontalContentAlignment = HorizontalAlignment.Left,
                     Width = 290,
                     Margin = new Thickness(0,2,0,3),
                     Background = new SolidColorBrush(Color.FromArgb(255, 239, 239, 239))
