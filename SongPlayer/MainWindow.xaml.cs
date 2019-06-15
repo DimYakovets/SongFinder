@@ -17,12 +17,14 @@ namespace SongPlayer
     public partial class MainWindow : Window
     {
         public static List<Song> Songs { get; private set; }
-        public DispatcherTimer Timer { get => timer; set => timer = value; }
-
         readonly List<string> files = new List<string>();
         short fileIndex;
         bool pChange = false;
         Song selected = null;
+        readonly MediaPlayer Player = new MediaPlayer();
+        readonly DispatcherTimer Timer = new DispatcherTimer();
+        State state = State.NaN;
+        bool PChange = false;
 
         public MainWindow()
         {
@@ -30,6 +32,7 @@ namespace SongPlayer
             try
             {
                 InitializeComponent();
+                VolumeSlider.Value = 0.85;
             }
             catch(Exception e)
             {
@@ -170,18 +173,13 @@ namespace SongPlayer
         }
         #endregion
         #region Player
-        enum State
+        private enum State
         {
             Play,
             Pause,
             Stop,
             NaN
         }
-
-        readonly MediaPlayer player = new MediaPlayer();
-        DispatcherTimer timer = new DispatcherTimer();
-        State state = State.NaN;
-        bool PChange = false;
         private void Play(string file)
         {
             if (state == State.NaN || state == State.Stop)
@@ -202,22 +200,24 @@ namespace SongPlayer
                     TimeSlider.Maximum = time;
                 }
                 TimeSlider.Value = 0;
-                player.Open(new Uri(file));
-                player.SpeedRatio = 1;
-
-                player.MediaEnded += (o, e) => Stop(null, null);
-                Timer.Interval = TimeSpan.FromSeconds(.5);
+                Player.Open(new Uri(file));
+                Player.SpeedRatio = 1;
+                Player.MediaEnded += (o, e) => Stop(null, null);
+                Timer.Interval = TimeSpan.FromSeconds(0.5);
                 Timer.Tick += (o,e) => 
                 {
-                    TimeNow.Text = player.Position.ToString(@"mm\:ss");
-                    var now = player.Position.TotalSeconds;
+                    TimeNow.Text = Player.Position.ToString(@"mm\:ss");
+                    var now = Player.Position.TotalSeconds;
                     PChange = true;
                     TimeSlider.Value = now;
                     PChange = false;
                 };
 
                 Timer.Start();
-                player.Play();
+                Player.Play();
+
+                Player.Volume -= 0.02;
+                Player.Volume += 0.02;
 
                 state = State.Play;
                 PausePlay.Content = "Пауза";
@@ -228,7 +228,7 @@ namespace SongPlayer
         {
             if (state == State.Play || state == State.Pause)
             {
-                player.Stop();
+                Player.Stop();
                 state = State.Stop;
                 PausePlay.Content = "Паузa";
                 TimeNow.Text = "00:00";
@@ -236,23 +236,23 @@ namespace SongPlayer
                 TimeSlider.Value = 0;
                 TimeSlider.Maximum = 0;
                 Timer.Stop();
-                player.Close();
+                Player.Close();
             }
         }
         private void Pause (object sender, RoutedEventArgs e)
         {
             if (state == State.Play)
             {
-                player.Pause();
+                Player.Pause();
                 state = State.Pause;
-                timer.Stop();
+                Timer.Stop();
                 PausePlay.Content = "Продовжити";
                 return;
             }
             if (state == State.Pause)
             {
-                player.Play();
-                timer.Start();
+                Player.Play();
+                Timer.Start();
                 state = State.Play;
                 PausePlay.Content = "Пауза";
             }
@@ -261,13 +261,13 @@ namespace SongPlayer
         {
             if (!PChange)
             {
-                player.Position = TimeSpan.FromSeconds(e.NewValue);
-                TimeNow.Text = player.Position.ToString(@"mm\:ss");
+                Player.Position = TimeSpan.FromSeconds(e.NewValue);
+                TimeNow.Text = Player.Position.ToString(@"mm\:ss");
             }
         }
         private void VolumeChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            player.Volume = e.NewValue;
+            Player.Volume = e.NewValue;
             VolumeText.Text = $"Гучність : {(int)(e.NewValue * 100)}";
         }
         #endregion
@@ -293,7 +293,7 @@ namespace SongPlayer
                 Log.Message("File Data\\Temp\\Songs.db crated.");
                 db.Close();
             }
-            System.IO.DirectoryInfo log = new System.IO.DirectoryInfo(Environment.CurrentDirectory + "\\Data\\DataBase");
+            System.IO.DirectoryInfo log = new System.IO.DirectoryInfo(Environment.CurrentDirectory + "\\Data\\Log");
             if (!log.Exists)
             {
                 log.Create();
@@ -342,7 +342,7 @@ namespace SongPlayer
         }
         #endregion
         #region Help methods
-        void UpdateSongs()
+        private void UpdateSongs()
         {
             Songs = DataBaseHelper.Get();
             Songs.Sort((x, y) => String.CompareOrdinal(x.Name, y.Name));
